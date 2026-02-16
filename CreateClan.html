@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clan Portal</title>
+
+<style>
+:root{
+  --bg:#0f1218;
+  --panel:#161b22;
+  --border:#273244;
+  --text:#d7e3ee;
+  --muted:#9aa8b6;
+  --accent:#66c0f4;
+  --good:#27ae60;
+  --bad:#e74c3c;
+
+  --shadow2:0 18px 60px rgba(0,0,0,.55);
+  --radius:16px;
+  --radius2:14px;
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:
+    radial-gradient(900px 500px at 20% 10%, rgba(102,192,244,.14), transparent 60%),
+    radial-gradient(900px 500px at 90% 20%, rgba(39,174,96,.10), transparent 65%),
+    linear-gradient(180deg, var(--bg), #0b0f14);
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:24px;
+}
+
+.container{
+  width:100%;
+  max-width:700px;
+  padding:34px;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow2);
+  text-align:center;
+}
+
+h1{
+  font-size:2.5rem;
+  margin:0 0 8px;
+}
+
+.subtitle{
+  color:var(--muted);
+  margin:0 0 26px;
+}
+
+.hidden{ display:none; }
+
+fieldset{
+  border:1px solid var(--border);
+  border-radius:var(--radius2);
+  padding:26px;
+  background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.06));
+}
+
+legend{
+  color:var(--accent);
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+label{
+  display:block;
+  margin-top:14px;
+  color:var(--muted);
+  text-align:left;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#0b1016;
+  color:var(--text);
+  font-size:1rem;
+  outline:none;
+}
+
+.status{
+  margin-top:16px;
+  padding:14px;
+  border-radius:12px;
+  border:1px dashed rgba(255,255,255,.12);
+  background: rgba(0,0,0,.12);
+  font-size:16px;
+  font-weight:800;
+  white-space:pre-line;
+  min-height: 54px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.btn{
+  margin-top:18px;
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  cursor:pointer;
+  font-weight:900;
+  font-size:1.05rem;
+  transition: .12s ease;
+}
+
+.btn-primary{
+  background: linear-gradient(180deg, rgba(102,192,244,1), rgba(60,160,220,1));
+  color:#071018;
+}
+.btn-success{
+  background: linear-gradient(180deg, rgba(39,174,96,1), rgba(30,150,82,1));
+  color:#07150d;
+}
+.btn-neutral{
+  background: linear-gradient(180deg, rgba(46,55,68,1), rgba(28,35,46,1));
+  color: var(--text);
+}
+
+.btn:hover{ filter:brightness(1.05); }
+
+.back-btn{
+  margin-top:24px;               /* your red-circle area */
+  background:transparent;
+  border:1px solid rgba(255,255,255,.14);
+  color:var(--muted);
+  padding:10px 18px;
+  border-radius:10px;
+  font-weight:800;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.back-btn:hover{
+  color:var(--text);
+  border-color:rgba(255,255,255,.28);
+  background:rgba(255,255,255,.05);
+}
+
+/* Modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:18px;
+  z-index:9999;
+  backdrop-filter: blur(6px);
+}
+.modal.hidden{ display:none; }
+
+.modal-box{
+  width:100%;
+  max-width:460px;
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  padding:20px;
+  text-align:left;
+}
+
+.modal-buttons{
+  display:flex;
+  gap:12px;
+  margin-top:14px;
+}
+.modal-buttons button{
+  margin-top:0;
+  width:100%;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Clan Portal</h1>
+  <p class="subtitle">Create a clan. Clan names are unique.</p>
+
+  <!-- PANEL 1: CREATE -->
+  <div id="createPanel">
+    <fieldset>
+      <legend>Clan Setup</legend>
+
+      <form id="clanForm">
+        <label for="clanNameInput">Clan Name</label>
+        <input id="clanNameInput" placeholder="e.g. Immortal" autocomplete="off" required>
+        <button id="submitBtn" class="btn btn-primary" type="submit">Create Clan</button>
+      </form>
+
+      <div id="clanCodeDisplay" class="status"></div>
+    </fieldset>
+  </div>
+
+  <!-- PANEL 2: SUCCESS -->
+  <div id="successPanel" class="hidden">
+    <fieldset>
+      <legend>Clan Created</legend>
+
+      <div class="status" id="successDetails"></div>
+
+      <button id="copyButton" class="btn btn-success" type="button">
+        Copy Code & Continue
+      </button>
+    </fieldset>
+  </div>
+
+  <!-- BACK BUTTON: always visible, in your circled spot -->
+  <button id="backButton" class="back-btn" type="button">Back to home</button>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div style="font-weight:900; font-size:1.05rem;">
+      Are you sure you want to create this clan?
+    </div>
+
+    <div style="margin-top:10px; color:var(--muted);">
+      Clan Name:
+      <span id="confirmClanName" style="color:var(--accent); font-weight:900;"></span>
+    </div>
+
+    <div class="modal-buttons">
+      <button id="cancelConfirm" class="btn btn-neutral" type="button">Cancel</button>
+      <button id="confirmCreate" class="btn btn-primary" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* Supabase config */
+const SUPABASE_URL = "https://ockgfqmvvouysgduegty.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ja2dmcW12dm91eXNnZHVlZ3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUwNzQsImV4cCI6MjA4NjczMTA3NH0.ANfnuVaGp83o3B7_uNz9pQa-Wp9EU0neV0gNDoKSacw";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* DOM */
+const clanForm = document.getElementById("clanForm");
+const clanNameInput = document.getElementById("clanNameInput");
+const clanCodeDisplay = document.getElementById("clanCodeDisplay");
+const submitBtn = document.getElementById("submitBtn");
+
+const createPanel = document.getElementById("createPanel");
+const successPanel = document.getElementById("successPanel");
+const successDetails = document.getElementById("successDetails");
+
+const copyButton = document.getElementById("copyButton");
+const backButton = document.getElementById("backButton");
+
+const confirmModal = document.getElementById("confirmModal");
+const confirmClanName = document.getElementById("confirmClanName");
+const cancelConfirm = document.getElementById("cancelConfirm");
+const confirmCreate = document.getElementById("confirmCreate");
+
+let pendingClanName = "";
+let currentClanCode = "";
+
+/* Hidden rule: disallow 1 character clan names */
+const MIN_LEN = 2;
+
+/* Helpers */
+function setInfo(msg){
+  clanCodeDisplay.style.color = "#66c0f4";
+  clanCodeDisplay.textContent = msg;
+}
+function setError(msg){
+  clanCodeDisplay.style.color = "#e74c3c";
+  clanCodeDisplay.textContent = msg;
+}
+
+/* Normalise */
+function cleanName(name){
+  return name.trim().replace(/\s+/g, " ");
+}
+
+/* Check clan exists BEFORE modal (shows real error if RLS blocks it) */
+async function clanNameExists(name){
+  const n = cleanName(name);
+
+  const { data, error } = await db
+    .from("clans")
+    .select("clan_code")
+    .eq("clan_name", n)
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
+}
+
+/* Generate code */
+function generateClanCode(){
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let suffix = "";
+  for (let i = 0; i < 8; i++){
+    suffix += chars[bytes[i] % chars.length];
+  }
+  return "CLAN-" + suffix;
+}
+
+/* Submit → check name → then confirm modal */
+clanForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const name = cleanName(clanNameInput.value);
+  if (!name) return;
+
+  if (name.length < MIN_LEN) {
+    setError("Clan name must be at least 2 characters.");
+    return;
+  }
+
+  submitBtn.disabled = true;
+  setInfo("Checking clan name...");
+
+  try{
+    const exists = await clanNameExists(name);
+
+    if (exists) {
+      setError("That clan name already exists. Please choose another.");
+      return;
+    }
+
+    pendingClanName = name;
+    confirmClanName.textContent = name;
+
+    clanCodeDisplay.textContent = "";
+    confirmModal.classList.remove("hidden");
+  }
+  catch(err){
+    console.error("Name check error:", err);
+    setError(err?.message || "Error checking clan name.");
+  }
+  finally{
+    submitBtn.disabled = false;
+  }
+});
+
+/* Cancel modal */
+cancelConfirm.onclick = () => {
+  confirmModal.classList.add("hidden");
+  clanNameInput.focus();
+};
+
+/* Click backdrop to cancel */
+confirmModal.addEventListener("click", (e) => {
+  if (e.target === confirmModal) {
+    confirmModal.classList.add("hidden");
+    clanNameInput.focus();
+  }
+});
+
+/* Confirm → create clan → success panel */
+confirmCreate.onclick = async () => {
+  confirmModal.classList.add("hidden");
+
+  submitBtn.disabled = true;
+  setInfo("Creating clan...");
+
+  const code = generateClanCode();
+
+  const { error } = await db
+    .from("clans")
+    .insert([{ clan_name: pendingClanName, clan_code: code }]);
+
+  submitBtn.disabled = false;
+
+  if (error) {
+    console.error("Insert error:", error);
+    setError(error.message);
+    return;
+  }
+
+  currentClanCode = code;
+
+  createPanel.classList.add("hidden");
+  successPanel.classList.remove("hidden");
+
+  successDetails.style.color = "#27ae60";
+  successDetails.textContent =
+`Clan successfully created!
+
+Clan Name: ${pendingClanName}
+Clan Key: ${currentClanCode}`;
+
+  localStorage.setItem("currentClan", currentClanCode);
+};
+
+/* Copy */
+copyButton.onclick = async () => {
+  if (!currentClanCode) return;
+
+  try {
+    await navigator.clipboard.writeText(currentClanCode);
+    copyButton.textContent = "Copied! Redirecting...";
+  } catch {
+    copyButton.textContent = "Copy failed (use HTTPS). Redirecting...";
+  }
+
+  setTimeout(() => {
+    location.href = "ProfilePage.html";
+  }, 700);
+};
+
+/* Back button: always visible
+   - If success panel is showing -> go back to create panel
+   - If create panel is showing -> go to ProfilePage.html
+*/
+backButton.onclick = () => {
+  const successVisible = !successPanel.classList.contains("hidden");
+
+  if (successVisible) {
+    // back to create panel
+    successPanel.classList.add("hidden");
+    createPanel.classList.remove("hidden");
+
+    // reset UI bits
+    clanNameInput.focus();
+    clanCodeDisplay.textContent = "";
+    clanCodeDisplay.style.color = "";
+    copyButton.textContent = "Copy Code & Continue";
+  } else {
+    // back out of this page
+    location.href = "index.html";
+    // If you prefer browser history instead, replace with: history.back();
+  }
+};
+</script>
+
+</body>
+</html>

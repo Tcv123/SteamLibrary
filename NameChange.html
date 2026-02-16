@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steam Profile Library — Change Clan Name</title>
+
+<style>
+  :root{
+    --bg:#0f1218;
+    --panel:#161b22;
+    --panel2:#11161d;
+    --border:#273244;
+    --text:#d7e3ee;
+    --muted:#9aa8b6;
+    --accent:#66c0f4;
+    --shadow: 0 10px 34px rgba(0,0,0,.52);
+    --radius: 16px;
+    --ring: 0 0 0 4px rgba(102,192,244,.14);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color:var(--text);
+    padding:32px 18px 60px;
+  }
+
+  .container{max-width:920px;margin:0 auto;}
+  header{text-align:center;margin-bottom:18px;}
+  h1{margin:0;font-size: clamp(28px, 4vw, 44px);font-weight:900;letter-spacing:.4px;}
+  .subtitle{margin:10px auto 0;color:var(--muted);font-size:14px;line-height:1.6;max-width:720px;}
+
+  .panel{
+    background: var(--panel);
+    border:1px solid rgba(39,50,68,.95);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding:20px;
+  }
+
+  /* ✅ progress dots: fill previous ones */
+  .progress{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    margin:4px 0 16px;
+    padding:10px 0 14px;
+  }
+
+  .dot{
+    width:10px;height:10px;border-radius:999px;
+    background: rgba(154,168,182,.22);
+    border:1px solid rgba(39,50,68,.95);
+    flex: 0 0 auto;
+    box-shadow: 0 0 0 4px rgba(0,0,0,.14);
+  }
+  .dot.active{
+    background: rgba(102,192,244,.92);
+    border-color: rgba(102,192,244,.55);
+    box-shadow: 0 0 0 4px rgba(102,192,244,.16);
+  }
+
+  .step{display:none;gap:12px;}
+  .step.active{display:grid;}
+
+  label{
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:.35px;
+    text-transform: uppercase;
+    margin-bottom:6px;
+    display:block;
+  }
+
+  input{
+    width:100%;
+    padding:14px 14px;
+    border-radius:12px;
+    border:1px solid rgba(39,50,68,.95);
+    background: var(--panel2);
+    color: var(--text);
+    outline:none;
+    font-size:14px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  input::placeholder{color: rgba(154,168,182,.7);}
+  input:focus{
+    border-color: rgba(102,192,244,.55);
+    box-shadow: var(--ring);
+  }
+
+  button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+  }
+
+  /* ✅ inside-panel actions: only 2 buttons, clean */
+  .actions-row{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:6px;
+  }
+
+  button, a.btn{
+    padding:14px 16px;
+    border-radius:12px;
+    border:1px solid transparent;
+    cursor:pointer;
+    font-weight:900;
+    font-size:14px;
+    letter-spacing:.2px;
+    transition: transform .05s ease, filter .15s ease, border-color .15s ease;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width: 170px;
+    user-select:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button:active, a.btn:active{ transform: translateY(1px); }
+
+  .btn-primary{
+    background: var(--accent);
+    color:#071018;
+    box-shadow: 0 10px 24px rgba(0,0,0,.28);
+  }
+  .btn-primary:hover{filter:brightness(1.04);}
+
+  .btn-secondary{
+    background: transparent;
+    color:var(--text);
+    border-color: rgba(39,50,68,.95);
+  }
+  .btn-secondary:hover{
+    filter:brightness(1.04);
+    border-color: rgba(102,192,244,.35);
+  }
+
+  .btn-back{
+    border-color: rgba(102,192,244,.55);
+    box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  }
+
+  .card{
+    padding:14px;
+    border-radius:14px;
+    border:1px solid rgba(39,50,68,.95);
+    background: var(--panel2);
+    font-size:13px;
+    line-height:1.55;
+  }
+  .card b{color: var(--accent);}
+
+  .status{
+    margin-top:12px;
+    font-size:13px;
+    color: var(--muted);
+    line-height:1.45;
+    white-space: pre-wrap;
+    padding:10px 12px;
+    border-radius:12px;
+    border:1px solid rgba(39,50,68,.65);
+    background: rgba(17,22,29,.55);
+  }
+  .status:empty{
+    padding:0;
+    border:none;
+    background:transparent;
+    margin-top:10px;
+  }
+  .status.ok{
+    color:#a9f0bf;
+    border-color: rgba(155,231,176,.28);
+    background: rgba(155,231,176,.06);
+  }
+  .status.bad{
+    color:#ffb3bc;
+    border-color: rgba(255,154,166,.28);
+    background: rgba(255,154,166,.06);
+  }
+
+  .successWrap{
+    text-align:center;
+    padding:30px 20px;
+    border-radius:16px;
+    border:1px solid rgba(102,192,244,.35);
+    background: rgba(102,192,244,.06);
+    margin-top:14px;
+  }
+  .successTitle{
+    font-size:30px;
+    font-weight:950;
+    margin:0;
+    letter-spacing:.2px;
+  }
+  .successSub{
+    margin:10px 0 0;
+    color: var(--muted);
+    font-size:14px;
+  }
+  .successName{
+    margin:18px 0 0;
+    font-size:18px;
+    line-height:1.7;
+  }
+  .pill{
+    display:inline-block;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid rgba(39,50,68,.95);
+    background: rgba(255,255,255,.04);
+    margin:6px 4px 0;
+    font-weight:950;
+  }
+
+  /* ✅ OUTSIDE panel navigation */
+  .nav-bar{
+    max-width:920px;
+    margin:14px auto 0;
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .nav-bar button,
+  .nav-bar a{
+    min-width: 170px;
+  }
+
+  @media (max-width: 520px){
+    body{padding:22px 14px 54px;}
+    .panel{padding:16px;}
+    .actions-row button{min-width: 100%;}
+    .nav-bar button, .nav-bar a{min-width: 100%;}
+  }
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>Change Clan Name</h1>
+      <p class="subtitle">
+        Enter clan key → confirm clan → enter new name → confirm → save → finish.
+      </p>
+    </header>
+
+    <div class="panel">
+
+      <!-- ✅ 4 dots -->
+      <div class="progress" aria-label="progress">
+        <div class="dot" id="dot1"></div>
+        <div class="dot" id="dot2"></div>
+        <div class="dot" id="dot3"></div>
+        <div class="dot" id="dot4"></div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div class="step active" id="step1">
+        <div>
+          <label for="clanCode">Clan Code</label>
+          <input id="clanCode" type="text" placeholder="e.g. CLAN-0MU7B3DQ" autocomplete="off" />
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-primary" id="btnLoad">🔎 Find clan</button>
+          <button class="btn-secondary" id="btnLoadAlt" type="button">Clear</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step" id="step2">
+        <div class="card" id="clanSummary"></div>
+
+        <div class="actions-row">
+          <button class="btn-primary" id="btnClanYes">✅ Yes, that’s correct</button>
+          <button class="btn-secondary" id="btnClanNo">❌ No, try again</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step" id="step3">
+        <div class="card" id="currentNameCard"></div>
+
+        <div>
+          <label for="newName">New Clan Name</label>
+          <input id="newName" type="text" placeholder="Type the new name" maxlength="40" />
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-primary" id="btnNameContinue">Continue</button>
+          <button class="btn-secondary" id="btnNameClear">Clear</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step" id="step4">
+        <div class="card" id="changePreview"></div>
+
+        <div class="actions-row">
+          <button class="btn-primary" id="btnConfirmSave">Confirm & save</button>
+          <button class="btn-secondary" id="btnCancelSave">No, change it</button>
+        </div>
+
+        <!-- SUCCESS (revealed after save) -->
+        <div class="successWrap" id="successWrap" style="display:none;">
+          <p class="successTitle" id="successTitle">Name changed</p>
+          <p class="successSub" id="successSub">Your clan name has been updated.</p>
+          <div class="successName" id="successDetails"></div>
+
+          <div class="actions-row" style="margin-top:14px;justify-content:center;">
+            <button class="btn-primary" id="btnHappyYes">Continue to profiles</button>
+            <button class="btn-secondary" id="btnHappyNo">No, revert</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <!-- ✅ navigation OUTSIDE the panel -->
+    <div class="nav-bar">
+      <button class="btn-secondary btn-back" id="btnBackGlobal" type="button">← Back</button>
+      <a class="btn btn-secondary btn-back" href="index.html">Back to home</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    // Supabase
+    const SUPABASE_URL = "https://ockgfqmvvouysgduegty.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ja2dmcW12dm91eXNnZHVlZ3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUwNzQsImV4cCI6MjA4NjczMTA3NH0.ANfnuVaGp83o3B7_uNz9pQa-Wp9EU0neV0gNDoKSacw";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ✅ Schema
+    const TABLE = "clans";
+    const COL_CODE = "clan_code";
+    const COL_NAME = "clan_name";
+
+    // Elements
+    const statusEl = document.getElementById("status");
+
+    const steps = [
+      document.getElementById("step1"),
+      document.getElementById("step2"),
+      document.getElementById("step3"),
+      document.getElementById("step4")
+    ];
+    const dots = [
+      document.getElementById("dot1"),
+      document.getElementById("dot2"),
+      document.getElementById("dot3"),
+      document.getElementById("dot4")
+    ];
+
+    const clanCodeEl = document.getElementById("clanCode");
+    const newNameEl = document.getElementById("newName");
+
+    const clanSummaryEl = document.getElementById("clanSummary");
+    const currentNameCardEl = document.getElementById("currentNameCard");
+    const changePreviewEl = document.getElementById("changePreview");
+
+    const successWrapEl = document.getElementById("successWrap");
+    const successDetailsEl = document.getElementById("successDetails");
+
+    const btnLoad = document.getElementById("btnLoad");
+    const btnLoadAlt = document.getElementById("btnLoadAlt");
+    const btnClanYes = document.getElementById("btnClanYes");
+    const btnClanNo  = document.getElementById("btnClanNo");
+
+    const btnNameContinue = document.getElementById("btnNameContinue");
+    const btnNameClear    = document.getElementById("btnNameClear");
+
+    const btnConfirmSave  = document.getElementById("btnConfirmSave");
+    const btnCancelSave   = document.getElementById("btnCancelSave");
+
+    const btnHappyYes = document.getElementById("btnHappyYes");
+    const btnHappyNo  = document.getElementById("btnHappyNo");
+
+    const btnBackGlobal = document.getElementById("btnBackGlobal");
+
+    // State
+    const state = { clanCode:"", currentName:"", newName:"", savedName:"" };
+    let currentStep = 1;
+
+    function setStatus(msg, type){
+      statusEl.textContent = msg || "";
+      statusEl.className = "status " + (type || "");
+    }
+
+    // ✅ Fill previous dots too
+    function setStep(n){
+      currentStep = n;
+      steps.forEach((s, i) => s.classList.toggle("active", i === (n - 1)));
+      dots.forEach((d, i) => d.classList.toggle("active", i <= (n - 1)));
+      setStatus("");
+
+      // hide success unless on step 4
+      if (n !== 4) successWrapEl.style.display = "none";
+
+      // back button disabled on step 1
+      btnBackGlobal.disabled = (n === 1);
+    }
+
+    function clean(v){ return (v || "").trim(); }
+    function sameName(a, b){ return clean(a).toLowerCase() === clean(b).toLowerCase(); }
+
+    function disableAll(disabled){
+      [
+        btnBackGlobal,
+        btnLoad, btnLoadAlt,
+        btnClanYes, btnClanNo,
+        btnNameContinue, btnNameClear,
+        btnConfirmSave, btnCancelSave,
+        btnHappyYes, btnHappyNo
+      ].forEach(b => b && (b.disabled = disabled));
+
+      // keep back disabled on step 1
+      if (disabled === false && currentStep === 1) btnBackGlobal.disabled = true;
+    }
+
+    async function fetchClanName(code){
+      const { data, error } = await supabaseClient
+        .from(TABLE)
+        .select(COL_NAME)
+        .eq(COL_CODE, code)
+        .maybeSingle();
+
+      console.log("fetchClanName:", { code, data, error });
+
+      if (error) throw new Error(error.message);
+      if (!data) return null;
+      return data[COL_NAME] ?? "";
+    }
+
+    async function updateClanNameAndVerify(code, newName){
+      const { error: updError } = await supabaseClient
+        .from(TABLE)
+        .update({ [COL_NAME]: newName })
+        .eq(COL_CODE, code);
+
+      console.log("update attempt:", { code, newName, updError });
+
+      if (updError) throw new Error(updError.message);
+
+      const after = await fetchClanName(code);
+
+      if (after === null) throw new Error("Clan not found after update (unexpected).");
+      if (!sameName(after, newName)) {
+        throw new Error("Update was blocked (likely RLS). The database name did not change.");
+      }
+      return after;
+    }
+
+    // ✅ Sync on load
+    setStep(1);
+
+    // ✅ global back button (goes back one step)
+    btnBackGlobal.addEventListener("click", () => {
+      if (currentStep <= 1) return;
+      setStep(currentStep - 1);
+      setStatus("", "");
+      if (currentStep === 3) newNameEl.focus();
+    });
+
+    // Step 1: clear
+    btnLoadAlt.addEventListener("click", () => {
+      clanCodeEl.value = "";
+      setStatus("Cleared.", "ok");
+      clanCodeEl.focus();
+    });
+
+    // STEP 1 -> STEP 2
+    btnLoad.addEventListener("click", async () => {
+      const code = clean(clanCodeEl.value);
+      if (!code) return setStatus("Enter a clan code first.", "bad");
+
+      disableAll(true);
+      setStatus("Looking up clan…");
+
+      try{
+        const currentName = await fetchClanName(code);
+        if (currentName === null){
+          setStatus("No clan found for that code.", "bad");
+          disableAll(false);
+          return;
+        }
+
+        state.clanCode = code;
+        state.currentName = currentName;
+        state.newName = "";
+        newNameEl.value = "";
+        successWrapEl.style.display = "none";
+
+        clanSummaryEl.innerHTML =
+          `We found clan <b>${state.clanCode}</b> with name: <b>${state.currentName || "(blank)"}</b><br><br>
+           Is this the correct clan?`;
+
+        setStep(2);
+        disableAll(false);
+        setStatus("Please confirm the clan.", "ok");
+      }catch(err){
+        setStatus("Load failed: " + err.message, "bad");
+        disableAll(false);
+      }
+    });
+
+    // STEP 2 -> No (reset to step 1)
+    btnClanNo.addEventListener("click", () => {
+      state.clanCode = "";
+      state.currentName = "";
+      state.newName = "";
+      clanCodeEl.value = "";
+      newNameEl.value = "";
+      successWrapEl.style.display = "none";
+      setStep(1);
+      setStatus("Okay — enter the clan code again.", "ok");
+      clanCodeEl.focus();
+    });
+
+    // STEP 2 -> Yes -> STEP 3
+    btnClanYes.addEventListener("click", () => {
+      currentNameCardEl.innerHTML =
+        `Current clan: <b>${state.clanCode}</b><br>Current name: <b>${state.currentName || "(blank)"}</b>`;
+      successWrapEl.style.display = "none";
+      setStep(3);
+      setStatus("Enter the new clan name.", "ok");
+      newNameEl.focus();
+    });
+
+    // Clear new name
+    btnNameClear.addEventListener("click", () => {
+      state.newName = "";
+      newNameEl.value = "";
+      setStatus("Cleared. Enter a new name.", "ok");
+      newNameEl.focus();
+    });
+
+    // STEP 3 -> STEP 4 (block same name + hidden min length rule)
+    btnNameContinue.addEventListener("click", () => {
+      const newName = clean(newNameEl.value);
+      if (!newName) return setStatus("Please enter a new clan name.", "bad");
+
+      // hidden rule: must be 2+ characters
+      if (newName.length < 2) return setStatus("Please enter a valid clan name.", "bad");
+
+      if (sameName(newName, state.currentName)) {
+        return setStatus("New name must be different from the current name.", "bad");
+      }
+
+      state.newName = newName;
+
+      changePreviewEl.innerHTML =
+        `You’re about to change clan <b>${state.clanCode}</b><br><br>
+         From: <b>${state.currentName || "(blank)"}</b><br>
+         To: <b>${state.newName}</b><br><br>
+         Do you want to save this change?`;
+
+      setStep(4);
+      setStatus("Confirm to save the change.", "ok");
+    });
+
+    // STEP 4 -> Cancel (go back to step 3)
+    btnCancelSave.addEventListener("click", () => {
+      successWrapEl.style.display = "none";
+      setStep(3);
+      setStatus("No problem — update the name and try again.", "ok");
+      newNameEl.focus();
+    });
+
+    // STEP 4 -> Confirm save (reveal success)
+    btnConfirmSave.addEventListener("click", async () => {
+      disableAll(true);
+      setStatus("Saving to Supabase…");
+
+      try{
+        const saved = await updateClanNameAndVerify(state.clanCode, state.newName);
+        state.savedName = saved;
+
+        successDetailsEl.innerHTML = `
+          <div style="margin-top:10px;">
+            Clan key: <span class="pill">${state.clanCode}</span>
+          </div>
+          <div style="margin-top:14px;">
+            Old name: <span class="pill">${state.currentName || "(blank)"}</span>
+          </div>
+          <div style="margin-top:10px;font-size:20px;">
+            New name: <span class="pill">${state.savedName}</span>
+          </div>
+        `;
+
+        successWrapEl.style.display = "block";
+        disableAll(false);
+        setStatus("", "");
+      }catch(err){
+        setStatus(
+          "Save failed: " + err.message +
+          "\n\nIf this says RLS blocked it, you need UPDATE policy on table 'clans' for anon.",
+          "bad"
+        );
+        disableAll(false);
+      }
+    });
+
+    // Success -> Yes => go to profile page
+    btnHappyYes.addEventListener("click", () => {
+      window.location.href = "ProfilePage.html";
+    });
+
+    // Success -> No => revert and go back to step 3
+    btnHappyNo.addEventListener("click", async () => {
+      disableAll(true);
+      setStatus("Reverting to the old name…");
+
+      try{
+        await updateClanNameAndVerify(state.clanCode, state.currentName);
+
+        state.newName = "";
+        newNameEl.value = "";
+
+        currentNameCardEl.innerHTML =
+          `Current clan: <b>${state.clanCode}</b><br>Current name: <b>${state.currentName || "(blank)"}</b>`;
+
+        successWrapEl.style.display = "none";
+        setStep(3);
+        disableAll(false);
+        setStatus("Reverted ✅ Enter a different new name if you want.", "ok");
+        newNameEl.focus();
+      }catch(err){
+        setStatus("Revert failed: " + err.message, "bad");
+        disableAll(false);
+      }
+    });
+
+    // Enter key follows flow
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+
+      if (steps[0].classList.contains("active")) btnLoad.click();
+      else if (steps[1].classList.contains("active")) btnClanYes.click();
+      else if (steps[2].classList.contains("active")) btnNameContinue.click();
+      else if (steps[3].classList.contains("active")) btnConfirmSave.click();
+    });
+  </script>
+</body>
+</html>

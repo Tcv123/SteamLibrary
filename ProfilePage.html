@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steam Clan Profile Library</title>
+
+<style>
+:root{
+  --bg:#0f1218;
+  --panel:#161b22;
+  --panel2:#11161d;
+  --border:#273244;
+  --text:#d7e3ee;
+  --muted:#9aa8b6;
+  --accent:#66c0f4;
+  --danger:#c0392b;
+  --warn:#f39c12;
+  --ok:#27ae60;
+  --shadow: 0 8px 30px rgba(0,0,0,.45);
+  --radius: 14px;
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:
+    radial-gradient(1200px 600px at 20% -10%, rgba(102,192,244,.18), transparent 60%),
+    radial-gradient(1000px 500px at 110% 0%, rgba(102,192,244,.10), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  padding:32px 18px 60px;
+}
+.container{max-width:1100px;margin:0 auto;}
+
+header{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  margin-bottom:18px;
+}
+h1{
+  margin:0 0 14px 0;
+  font-size: clamp(40px, 5.5vw, 56px);
+  font-weight:800;
+  letter-spacing:-0.5px;
+  color:#e6edf3;
+  text-align:center;
+  align-self:center;
+  text-shadow:
+    0 1px 0 rgba(0,0,0,.6),
+    0 6px 18px rgba(0,0,0,.35);
+}
+
+.panel{
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 30%), var(--panel);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding:18px;
+}
+.stack{display:grid; gap:14px;}
+fieldset{
+  border:1px solid var(--border);
+  border-radius: 12px;
+  padding:14px;
+  background: var(--panel2);
+}
+legend{
+  padding:0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing:.4px;
+  text-transform: uppercase;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+  margin-top:8px;
+}
+.form-grid .full{grid-column:1/-1;}
+
+label{
+  display:block;
+  font-size:14px;
+  color:var(--muted);
+  margin:0 0 6px;
+}
+.req::after{
+  content:" *";
+  color: var(--accent);
+  font-weight:800;
+}
+.help{
+  margin-top:6px;
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.45;
+}
+
+input, textarea, select{
+  width:100%;
+  padding:13px 12px;
+  border-radius: 10px;
+  border:1px solid var(--border);
+  background:#0b1016;
+  color:var(--text);
+  outline:none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  font-size:14px;
+}
+input:focus, textarea:focus, select:focus{
+  border-color: rgba(102,192,244,.7);
+  box-shadow: 0 0 0 3px rgba(102,192,244,.18);
+}
+input::placeholder, textarea::placeholder{color:#6f7d8b;}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+  margin-top:10px;
+}
+
+button{
+  padding:12px 13px;
+  border-radius: 10px;
+  border:1px solid transparent;
+  cursor:pointer;
+  font-weight:800;
+  letter-spacing:.2px;
+  transition: transform .05s ease, filter .15s ease, border-color .15s ease;
+  user-select:none;
+}
+button:active{transform: translateY(1px);}
+
+.btn-primary{background:var(--accent); color:#071018;}
+.btn-secondary{background:transparent; color:var(--text); border-color:var(--border);}
+.btn-danger{background:var(--danger); color:white;}
+.btn-warn{background:var(--warn); color:#1b1200;}
+.btn-ok{background:var(--ok); color:white;}
+.btn-secondary:hover, .btn-primary:hover, .btn-danger:hover, .btn-warn:hover, .btn-ok:hover{filter:brightness(1.05);}
+
+/* top line */
+.topline{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+.clan-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid rgba(102,192,244,.35);
+  background: rgba(102,192,244,.10);
+  box-shadow: 0 10px 28px rgba(0,0,0,.25);
+}
+.clan-pill .clanName{
+  color:var(--accent);
+  font-weight:900;
+  letter-spacing:.4px;
+}
+.count-pill{
+  font-size:15px;
+  font-weight:800;
+  color:var(--accent);
+}
+
+.status{
+  font-size:13px;
+  color:var(--muted);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap:16px;
+  margin-top:16px;
+}
+.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 45%), #121824;
+  border:1px solid var(--border);
+  border-radius: 14px;
+  padding:14px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+  display:grid;
+  gap:10px;
+  word-break: break-word;
+}
+.row{display:flex; gap:12px; align-items:center;}
+.avatar{
+  width:72px;height:72px;border-radius:12px;
+  object-fit:cover;background:#0b1016;border:1px solid var(--border);
+  flex: 0 0 auto;
+}
+.who{display:grid; gap:6px; min-width:0;}
+.who strong{font-size:16px;}
+.who span{color:var(--muted); font-size:14px;}
+
+/* Role pill (base style; colors are set inline from JS) */
+.role-pill{
+  display:inline-flex;
+  align-items:center;
+  width:fit-content;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.2px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+}
+
+a{color:var(--accent); text-decoration:none;}
+a:hover{text-decoration:underline;}
+
+.card-actions{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+.empty{
+  color:var(--muted);
+  text-align:center;
+  padding:22px 10px;
+  border:1px dashed var(--border);
+  border-radius: 14px;
+  background: rgba(255,255,255,.02);
+  margin-top:16px;
+}
+
+@media (max-width: 720px){
+  .form-grid{grid-template-columns: 1fr;}
+  .grid{grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));}
+}
+
+/* Search row layout + back button on the right */
+.search-actions{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+  gap:12px;
+}
+.left-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.back-home-btn{
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+}
+.back-home-btn:hover{
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <h1>Steam Profile Clan Library</h1>
+
+  <!-- HOW IT WORKS (dropdown) -->
+  <details class="panel" style="margin-bottom:14px;">
+    <summary style="
+      cursor:pointer;
+      font-weight:900;
+      letter-spacing:.2px;
+      color:var(--text);
+      list-style:none;
+      outline:none;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    ">
+      <span>How does this work?</span>
+      <span style="color:var(--muted); font-weight:800; font-size:13px;">Click to expand</span>
+    </summary>
+
+    <div style="margin-top:12px; color:var(--text);">
+      <div class="help" style="margin-top:0;">
+        This page is a shared library for saving Steam + Discord profiles for a specific clan code. It can be loaded again later by using the same clan code.
+      </div>
+
+      <div style="display:grid; gap:10px; margin-top:12px;">
+        <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--panel2);">
+          <strong style="display:block; margin-bottom:6px;">Load a clan</strong>
+          <div class="help" style="margin-top:0;">
+            Paste your clan code (example: <code>CLAN-5JVEC4LE</code>) and click <strong>Load clan</strong>.
+            The page will fetch that clan’s profiles and show them below.
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--panel2);">
+          <strong style="display:block; margin-bottom:6px;">Add profiles</strong>
+          <div class="help" style="margin-top:0;">
+            Fill in Steam name, Discord name, a team role, and a Steam profile link, then click <strong>Add profile</strong>.
+            It appears instantly and is saved to the clan key.
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--panel2);">
+          <strong style="display:block; margin-bottom:6px;">Edit / Remove</strong>
+          <div class="help" style="margin-top:0;">
+            Each profile card has <strong>Edit</strong> (updates the saved entry) and <strong>Remove</strong>(removing the profile from the clan).
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--panel2);">
+          <strong style="display:block; margin-bottom:6px;">Search & Sort</strong>
+          <div class="help" style="margin-top:0;">
+            Use <strong>Search</strong> to filter instantly. Use <strong>Sort</strong> to toggle A–Z ordering.
+            Use <strong>Role filter</strong> to show only specific roles, and <strong>Sort by Role</strong> to group by role.
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--panel2);">
+          <strong style="display:block; margin-bottom:6px;">Clear all (UI only)</strong>
+          <div class="help" style="margin-top:0;">
+            The <strong>Clear all profiles (UI only)</strong> button hides all the profiles on the screen,
+            but does <u>not</u> delete from the clan .  
+            If you click <strong>Load clan</strong> again, the profiles will reappear.
+          </div>
+        </div>
+
+        <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:var(--panel2);">
+          <strong style="display:block; margin-bottom:6px;">Live updates</strong>
+          <div class="help" style="margin-top:0;">
+            If multiple people are using the same clan code, changes are reflected automatically using realtime updates.
+          </div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <div class="topline" aria-live="polite">
+    <div class="clan-pill">
+      <strong>Clan:</strong>
+      <span class="clanName" id="clanNameTop"></span>
+    </div>
+    <div class="count-pill" id="statusText">0 profiles</div>
+  </div>
+</header>
+
+<div class="panel stack">
+
+  <!-- CLAN LOAD / SHARE -->
+  <fieldset>
+    <legend>Clan Code</legend>
+
+    <div class="form-grid">
+      <div class="full">
+        <label class="req" for="clanInput">Clan code</label>
+        <input id="clanInput" placeholder="e.g., CLAN-5JVEC4LE" autocomplete="off" required />
+
+        <div class="actions">
+          <button class="btn-warn" id="loadClanBtn" type="button">🔄 Load clan</button>
+          <button class="btn-ok" id="copyClanBtn" type="button">📋 Copy clan code</button>
+          <span class="status" id="currentClanText"></span>
+        </div>
+
+        <div class="help">
+          Paste a clan code and click <strong>Load clan</strong> to fetch profiles from Supabase.
+          This code stays the same; adding/removing profiles updates the clan’s stored list.
+        </div>
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- Add/Edit -->
+  <fieldset>
+    <legend>Add / Edit Profile</legend>
+
+    <form id="profileForm">
+      <div class="form-grid">
+        <div>
+          <label class="req" for="steamInput">Steam display name</label>
+          <input id="steamInput" placeholder="e.g., TCV" autocomplete="off" required />
+        </div>
+
+        <div>
+          <label class="req" for="discordInput">Discord name</label>
+          <input id="discordInput" placeholder="e.g., TCV#1234 or TCV" autocomplete="off" required />
+        </div>
+
+        <!-- Team role -->
+        <div class="full">
+          <label class="req" for="roleSelect">Team role</label>
+          <select id="roleSelect" required>
+            <option value="" disabled selected>Select a role…</option>
+            <option value="leader">Leader</option>
+            <option value="builder">Builder</option>
+            <option value="industrial">Industrial</option>
+            <option value="electrician">Electrician</option>
+            <option value="hemp farmer">Hemp Farmer</option>
+            <option value="roamer">Roamer</option>
+            <option value="other">Other…</option>
+          </select>
+          <div class="help">Choose a role. If you pick “Other…”, type your custom role below.</div>
+        </div>
+
+        <div class="full" id="customRoleWrap" style="display:none;">
+          <label class="req" for="customRoleInput">Custom role</label>
+          <input id="customRoleInput" placeholder="e.g., Base organiser" autocomplete="off" />
+        </div>
+
+        <div class="full">
+          <label class="req" for="steamLinkInput">Steam profile link</label>
+          <input id="steamLinkInput" placeholder="https://steamcommunity.com/id/steam64" autocomplete="off" required />
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn-primary" id="addBtn">Add profile</button>
+        <button type="button" class="btn-secondary" id="cancelEditBtn" style="display:none;">Cancel edit</button>
+        <span class="status" id="editHint"></span>
+      </div>
+
+      <div class="help">
+        You must load/set a clan code before adding profiles.
+      </div>
+    </form>
+  </fieldset>
+
+  <!-- Search & sort -->
+  <fieldset>
+    <legend>Search & Sort</legend>
+
+    <div class="form-grid">
+      <div class="full">
+        <label for="searchInput">Search</label>
+        <input id="searchInput" placeholder="Search Steam name, Discord, role, or link…" />
+        <div class="help">Search updates instantly as you type.</div>
+      </div>
+
+      <!-- ✅ NEW: role filter -->
+      <div class="full">
+        <label for="roleFilter">Role filter</label>
+        <select id="roleFilter">
+          <option value="all" selected>All roles</option>
+          <option value="leader">Leader</option>
+          <option value="builder">Builder</option>
+          <option value="industrial">Industrial</option>
+          <option value="electrician">Electrician</option>
+          <option value="hemp farmer">Hemp Farmer</option>
+          <option value="roamer">Roamer</option>
+          <option value="other">Other</option>
+        </select>
+        <div class="help">Filter profiles by their role.</div>
+      </div>
+    </div>
+
+    <div class="actions search-actions">
+      <div class="left-actions">
+        <button class="btn-secondary" id="sortBtn" type="button">Sort: Off</button>
+        <!-- ✅ NEW: sort by role -->
+        <button class="btn-secondary" id="roleSortBtn" type="button">Sort by Role: Off</button>
+        <button class="btn-secondary" id="clearSearchBtn" type="button">Clear search</button>
+      </div>
+
+      <a class="btn-secondary back-home-btn" href="index.html">← Back to Home</a>
+    </div>
+  </fieldset>
+
+  <div id="profileGrid" class="grid"></div>
+  <div id="emptyState" class="empty" style="display:none;">No profiles yet. Load a clan, then add a profile above.</div>
+
+  <!-- Clear UI-only button (does NOT delete from Supabase) -->
+  <div class="actions" style="justify-content:center; margin-top:14px;">
+    <button class="btn-danger" id="clearAllUiBtn" type="button" style="display:none;">
+      Clear all profiles (UI only)
+    </button>
+  </div>
+</div>
+
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = window.supabase.createClient(
+  "https://ockgfqmvvouysgduegty.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ja2dmcW12dm91eXNnZHVlZ3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTUwNzQsImV4cCI6MjA4NjczMTA3NH0.ANfnuVaGp83o3B7_uNz9pQa-Wp9EU0neV0gNDoKSacw"
+);
+</script>
+
+<script>
+let profiles = [];
+let clanId = "";
+let clanName = "";
+let editId = null;
+let sortAZ = false;
+
+/* ✅ ADDED: write to BOTH steam_profiles tables
+   Replace the second name with your real second table name */
+const PROFILE_TABLES = ["steam_profiles"];
+const PRIMARY_TABLE = PROFILE_TABLES[0];
+
+/* ✅ NEW: role sort mode (0 off, 1 A-Z, 2 Z-A) */
+let roleSortMode = 0;
+
+const clanNameTop = document.getElementById("clanNameTop");
+const statusText = document.getElementById("statusText");
+
+const editHint = document.getElementById("editHint");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+const addBtn = document.getElementById("addBtn");
+const sortBtn = document.getElementById("sortBtn");
+
+const roleSortBtn = document.getElementById("roleSortBtn");
+
+const steamInput = document.getElementById("steamInput");
+const discordInput = document.getElementById("discordInput");
+const steamLinkInput = document.getElementById("steamLinkInput");
+const searchInput = document.getElementById("searchInput");
+
+const roleSelect = document.getElementById("roleSelect");
+const customRoleWrap = document.getElementById("customRoleWrap");
+const customRoleInput = document.getElementById("customRoleInput");
+
+const roleFilter = document.getElementById("roleFilter");
+
+const clanInput = document.getElementById("clanInput");
+const loadClanBtn = document.getElementById("loadClanBtn");
+const copyClanBtn = document.getElementById("copyClanBtn");
+const currentClanText = document.getElementById("currentClanText");
+
+const clearSearchBtn = document.getElementById("clearSearchBtn");
+const clearAllUiBtn = document.getElementById("clearAllUiBtn");
+
+function updateHeader(){
+  clanNameTop.textContent = clanName || "";
+  statusText.textContent = `${profiles.length} profile${profiles.length===1?'':'s'}`;
+  sortBtn.textContent = sortAZ ? "Sort: A–Z" : "Sort: Off";
+  roleSortBtn.textContent =
+    roleSortMode === 1 ? "Sort by Role: A–Z" :
+    roleSortMode === 2 ? "Sort by Role: Z–A" :
+    "Sort by Role: Off";
+}
+
+/* Toast */
+let toastTimer = null;
+function ensureToast(){
+  let toast = document.getElementById("toast");
+  if(toast) return toast;
+
+  toast = document.createElement("div");
+  toast.id = "toast";
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+  toast.style.cssText = `
+    position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+    min-width:280px; max-width:min(520px, calc(100vw - 24px));
+    padding:12px 14px; border-radius:12px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(15,18,24,.92);
+    color:var(--text);
+    box-shadow: 0 14px 40px rgba(0,0,0,.45);
+    opacity:0; pointer-events:none;
+    transition: opacity .18s ease, transform .18s ease;
+    display:flex; gap:10px; align-items:flex-start;
+    z-index:9999;
+  `;
+  document.body.appendChild(toast);
+  return toast;
+}
+function showToast(message, type="info"){
+  const toast = ensureToast();
+  const accent =
+    type === "success" ? "rgba(39,174,96,.9)" :
+    type === "error" ? "rgba(192,57,43,.9)" :
+    type === "warn" ? "rgba(243,156,18,.9)" :
+    "rgba(102,192,244,.9)";
+
+  toast.style.boxShadow = `inset 6px 0 0 ${accent}, 0 14px 40px rgba(0,0,0,.45)`;
+  toast.innerHTML = `<div style="line-height:1.35; font-size:13px;">${escapeHtml(message)}</div>`;
+  toast.style.opacity = "1";
+  toast.style.transform = "translateX(-50%) translateY(0)";
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{
+    toast.style.opacity = "0";
+    toast.style.transform = "translateX(-50%) translateY(6px)";
+  }, 2600);
+}
+
+function generateProfileID(){
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let id = "";
+  for(let i=0;i<10;i++) id += chars.charAt(Math.floor(Math.random() * chars.length));
+  return id;
+}
+
+function normalizeLink(link){
+  link = String(link || "").trim();
+  if(!link) return "";
+  if(!link.startsWith("http")) link = "https://" + link;
+  try{
+    const u = new URL(link);
+    u.hash = "";
+    let s = u.toString();
+    if(s.endsWith("/")) s = s.slice(0, -1);
+    return s.toLowerCase();
+  } catch {
+    let s = link.toLowerCase();
+    if(s.endsWith("/")) s = s.slice(0, -1);
+    return s;
+  }
+}
+
+/* Role helpers */
+const KNOWN_ROLES = ["leader","builder","industrial","electrician","hemp farmer","roamer"];
+
+function normalizeRole(role){
+  return String(role || "").trim();
+}
+
+/* Capitalise role labels (your tags start with capital letters) */
+function titleCaseWords(str){
+  return String(str || "")
+    .trim()
+    .split(/\s+/)
+    .map(w => w ? (w[0].toUpperCase() + w.slice(1).toLowerCase()) : "")
+    .join(" ");
+}
+
+/* Determine if a role is one of the known roles */
+function isKnownRole(role){
+  const r = String(role || "").trim().toLowerCase();
+  return KNOWN_ROLES.includes(r);
+}
+
+/* Role colour mapping (distinct colours) */
+function roleStyle(roleRaw){
+  const r = String(roleRaw || "").trim().toLowerCase();
+
+  // You asked:
+  // Hemp Farmer - Green
+  // Leader - Red
+  // Builder - Blue
+  // Industrial - Purple
+  // Electrician - Yellow
+  // Roamer - Gold
+  // Other - Orange
+  const map = {
+    "hemp farmer": { bg:"rgba(46, 204, 113, .18)", border:"rgba(46, 204, 113, .55)", text:"rgba(46, 204, 113, 1)" }, // green
+    "leader":      { bg:"rgba(231, 76, 60, .18)",  border:"rgba(231, 76, 60, .55)",  text:"rgba(231, 76, 60, 1)" },  // red
+    "builder":     { bg:"rgba(52, 152, 219, .18)", border:"rgba(52, 152, 219, .55)", text:"rgba(52, 152, 219, 1)" }, // blue
+    "industrial":  { bg:"rgba(155, 89, 182, .18)", border:"rgba(155, 89, 182, .55)", text:"rgba(155, 89, 182, 1)" }, // purple
+    "electrician": { bg:"rgba(241, 196, 15, .18)", border:"rgba(241, 196, 15, .55)", text:"rgba(241, 196, 15, 1)" }, // yellow
+    "roamer":      { bg:"rgba(192, 192, 192, .18)", border:"rgba(192, 192, 192, .55)", text:"rgba(192, 192, 192, 1)" }, // silver
+    "other":       { bg:"rgba(243, 156, 18, .18)", border:"rgba(243, 156, 18, .55)", text:"rgba(243, 156, 18, 1)" }, // orange
+  };
+
+  // Any custom role: treat as "other" colour
+  const key = map[r] ? r : "other";
+  return map[key];
+}
+
+function getRoleFromForm(){
+  const v = roleSelect.value;
+  if(v === "other") return customRoleInput.value.trim();
+  return v;
+}
+
+function setRoleInForm(role){
+  const r = String(role || "").trim();
+  const match = KNOWN_ROLES.find(k => k.toLowerCase() === r.toLowerCase());
+
+  if(match){
+    roleSelect.value = match;
+    customRoleWrap.style.display = "none";
+    customRoleInput.value = "";
+    customRoleInput.required = false;
+  } else if(r){
+    roleSelect.value = "other";
+    customRoleWrap.style.display = "block";
+    customRoleInput.value = r;
+    customRoleInput.required = true;
+  } else {
+    roleSelect.value = "";
+    customRoleWrap.style.display = "none";
+    customRoleInput.value = "";
+    customRoleInput.required = false;
+  }
+}
+
+roleSelect.addEventListener("change", ()=>{
+  if(roleSelect.value === "other"){
+    customRoleWrap.style.display = "block";
+    customRoleInput.required = true;
+    customRoleInput.focus();
+  } else {
+    customRoleWrap.style.display = "none";
+    customRoleInput.required = false;
+    customRoleInput.value = "";
+  }
+});
+
+function isDuplicate({steam, discord, steamLink}, ignoreProfileId=null){
+  const linkNorm = normalizeLink(steamLink);
+  const steamNorm = String(steam).trim().toLowerCase();
+  const discordNorm = String(discord).trim().toLowerCase();
+
+  return profiles.some(p=>{
+    if(ignoreProfileId && p.profile_id === ignoreProfileId) return false;
+
+    const pLinkNorm = normalizeLink(p.steamLink);
+    if(linkNorm && pLinkNorm && linkNorm === pLinkNorm) return true;
+
+    const pSteamNorm = String(p.steam).trim().toLowerCase();
+    const pDiscordNorm = String(p.discord).trim().toLowerCase();
+    return (steamNorm && discordNorm && steamNorm === pSteamNorm && discordNorm === pDiscordNorm);
+  });
+}
+
+/* Clan name from DB */
+async function loadClanNameFromSupabase(){
+  clanName = "";
+
+  const { data, error } = await sb
+    .from("clans")
+    .select("clan_name")
+    .eq("clan_code", clanId)
+    .maybeSingle();
+
+  if(error){
+    console.error(error);
+    updateHeader();
+    return;
+  }
+
+  clanName = data?.clan_name || "";
+  updateHeader();
+}
+
+/* Load profiles */
+async function loadClanProfiles(){
+  const clean = String(clanInput.value || "").trim().toUpperCase();
+  if(!clean){
+    showToast("Paste a clan code like CLAN-5JVEC4LE.", "error");
+    return;
+  }
+
+  clanId = clean;
+  clanInput.value = clanId;
+  currentClanText.textContent = `Current clan: ${clanId}`;
+
+  profiles = [];
+  setEditMode(false);
+  renderProfiles();
+
+  await loadClanNameFromSupabase();
+
+  const { data, error } = await sb
+    .from(PRIMARY_TABLE)
+    .select("profile_id, steam_display_name, discord_name, steam_profile_link, team_role")
+    .eq("clan_id", clanId);
+
+  if(error){
+    showToast("Load failed: " + error.message, "error");
+    console.error(error);
+    return;
+  }
+
+  profiles = (data || []).map(row => ({
+    profile_id: row.profile_id,
+    steam: row.steam_display_name,
+    discord: row.discord_name,
+    steamLink: normalizeLink(row.steam_profile_link),
+    role: normalizeRole(row.team_role)
+  }));
+
+  renderProfiles();
+  subscribeToClanRealtime();
+  showToast(`Loaded ${profiles.length} profiles`, "success");
+}
+
+/* Supabase CRUD (role + writes to BOTH tables) */
+async function supabaseInsertOne(p){
+  const row = {
+    clan_id: clanId,
+    profile_id: p.profile_id,
+    steam_display_name: p.steam,
+    discord_name: p.discord,
+    steam_profile_link: p.steamLink,
+    team_role: p.role
+  };
+
+  const results = await Promise.all(
+    PROFILE_TABLES.map(t => sb.from(t).insert([row]))
+  );
+
+  const firstError = results.find(r => r.error)?.error;
+  if(firstError){
+    if(firstError.code === "23505"){
+      showToast("That Steam link already exists in this clan.", "error");
+    } else {
+      showToast("Supabase error: " + firstError.message, "error");
+    }
+    console.error(firstError);
+    return false;
+  }
+  return true;
+}
+
+async function supabaseUpdateOne(p){
+  const patch = {
+    steam_display_name: p.steam,
+    discord_name: p.discord,
+    steam_profile_link: p.steamLink,
+    team_role: p.role
+  };
+
+  const results = await Promise.all(
+    PROFILE_TABLES.map(t =>
+      sb.from(t)
+        .update(patch)
+        .eq("clan_id", clanId)
+        .eq("profile_id", p.profile_id)
+    )
+  );
+
+  const firstError = results.find(r => r.error)?.error;
+  if(firstError){
+    showToast("Supabase error: " + firstError.message, "error");
+    console.error(firstError);
+    return false;
+  }
+  return true;
+}
+
+async function supabaseDeleteOne(profile_id){
+  const results = await Promise.all(
+    PROFILE_TABLES.map(t =>
+      sb.from(t)
+        .delete()
+        .eq("clan_id", clanId)
+        .eq("profile_id", profile_id)
+    )
+  );
+
+  const firstError = results.find(r => r.error)?.error;
+  if(firstError){
+    showToast("Supabase delete failed: " + firstError.message, "error");
+    console.error(firstError);
+    return false;
+  }
+  return true;
+}
+
+/* Realtime */
+let realtimeChannel = null;
+
+function rowToProfile(row){
+  return {
+    profile_id: row.profile_id,
+    steam: row.steam_display_name,
+    discord: row.discord_name,
+    steamLink: normalizeLink(row.steam_profile_link),
+    role: normalizeRole(row.team_role)
+  };
+}
+function upsertLocalProfile(profile){
+  const i = profiles.findIndex(p => p.profile_id === profile.profile_id);
+  if(i >= 0) profiles[i] = profile;
+  else profiles.unshift(profile);
+}
+function removeLocalProfile(profile_id){
+  profiles = profiles.filter(p => p.profile_id !== profile_id);
+}
+function clearRealtime(){
+  if(realtimeChannel){ sb.removeChannel(realtimeChannel); realtimeChannel = null; }
+}
+
+function subscribeToClanRealtime(){
+  clearRealtime();
+  if(!clanId) return;
+
+  realtimeChannel = sb
+    .channel(`steam_profiles:${clanId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: PRIMARY_TABLE, filter: `clan_id=eq.${clanId}` },
+      (payload) => {
+        if(payload.eventType === "DELETE"){
+          removeLocalProfile(payload.old.profile_id);
+        } else {
+          upsertLocalProfile(rowToProfile(payload.new));
+        }
+        renderProfiles();
+      }
+    )
+    .subscribe();
+}
+
+/* UI controls */
+function setEditMode(on, steamName=""){
+  if(on){
+    addBtn.textContent = "Save changes";
+    cancelEditBtn.style.display = "inline-block";
+    editHint.textContent = `Editing: ${steamName}`;
+  } else {
+    addBtn.textContent = "Add profile";
+    cancelEditBtn.style.display = "none";
+    editHint.textContent = "";
+    editId = null;
+  }
+}
+
+document.getElementById("profileForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  addProfile();
+});
+
+cancelEditBtn.addEventListener("click", ()=>{
+  steamInput.value=""; discordInput.value=""; steamLinkInput.value="";
+  setRoleInForm("");
+  setEditMode(false);
+});
+
+searchInput.addEventListener("input", renderProfiles);
+roleFilter.addEventListener("change", renderProfiles);
+
+sortBtn.addEventListener("click", ()=>{
+  sortAZ = !sortAZ;
+  renderProfiles();
+});
+
+roleSortBtn.addEventListener("click", ()=>{
+  roleSortMode = (roleSortMode + 1) % 3; // 0 -> 1 -> 2 -> 0
+  renderProfiles();
+});
+
+document.getElementById("clearSearchBtn").addEventListener("click", ()=>{
+  searchInput.value = "";
+  roleFilter.value = "all";
+  renderProfiles();
+});
+
+loadClanBtn.addEventListener("click", loadClanProfiles);
+
+copyClanBtn.addEventListener("click", ()=>{
+  if(!clanId) return showToast("No clan code set yet.", "error");
+  navigator.clipboard.writeText(clanId).then(()=>{
+    showToast("Clan code copied.", "success");
+  }).catch(()=>{
+    showToast("Clipboard copy failed (browser permission).", "error");
+  });
+});
+
+/* Clear ALL profiles from UI only (does NOT touch Supabase) */
+clearAllUiBtn.addEventListener("click", ()=>{
+  if(!clanId) return showToast("Load a clan first.", "error");
+  if(profiles.length === 0) return showToast("No profiles to clear.", "warn");
+
+  const ok = confirm("Clear all profiles from the screen? (This will NOT delete from the clan key.)");
+  if(!ok) return;
+
+  profiles = [];
+  setEditMode(false);
+  renderProfiles();
+  showToast("Cleared from screen (not deleted from clan).", "success");
+});
+
+/* Add/Edit logic */
+async function addProfile(){
+  if(!clanId){
+    showToast("Load/set a clan code first (e.g., CLAN-5JVEC4LE).", "error");
+    return;
+  }
+
+  const steam = steamInput.value.trim();
+  const discord = discordInput.value.trim();
+  let steamLink = steamLinkInput.value.trim();
+  const role = normalizeRole(getRoleFromForm());
+
+  if(!steam || !discord || !steamLink || !role){
+    showToast("Please fill in all required fields.", "error");
+    return;
+  }
+
+  if(roleSelect.value === "other" && !customRoleInput.value.trim()){
+    showToast("Please type a custom role.", "error");
+    return;
+  }
+
+  steamLink = normalizeLink(steamLink);
+
+  if(isDuplicate({steam, discord, steamLink}, editId)){
+    showToast("That profile is already in your library.", "error");
+    return;
+  }
+
+  const profile = {
+    profile_id: editId ? editId : generateProfileID(),
+    steam,
+    discord,
+    steamLink,
+    role
+  };
+
+  if(editId){
+    profiles = profiles.map(p => p.profile_id === editId ? {...p, ...profile} : p);
+    setEditMode(false);
+    renderProfiles();
+    showToast("Profile updated.", "success");
+    await supabaseUpdateOne(profile);
+  } else {
+    profiles.unshift(profile);
+    renderProfiles();
+    showToast("Profile added.", "success");
+    await supabaseInsertOne(profile);
+  }
+
+  steamInput.value=""; discordInput.value=""; steamLinkInput.value="";
+  setRoleInForm("");
+}
+
+function editProfile(profile_id){
+  const p = profiles.find(x => x.profile_id === profile_id);
+  if(!p) return;
+
+  steamInput.value = p.steam;
+  discordInput.value = p.discord;
+  steamLinkInput.value = p.steamLink;
+  setRoleInForm(p.role);
+  editId = profile_id;
+
+  setEditMode(true, p.steam);
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+async function removeProfile(profile_id){
+  profiles = profiles.filter(p => p.profile_id !== profile_id);
+  renderProfiles();
+  showToast("Profile removed.", "warn");
+  await supabaseDeleteOne(profile_id);
+}
+
+/* Render */
+function renderProfiles(){
+  const grid = document.getElementById("profileGrid");
+  const empty = document.getElementById("emptyState");
+  const search = searchInput.value.toLowerCase();
+  const filter = roleFilter.value;
+
+  grid.innerHTML = "";
+
+  let filtered = profiles.filter(p => {
+    const roleText = String(p.role || "");
+    const matchesSearch =
+      p.steam.toLowerCase().includes(search) ||
+      p.discord.toLowerCase().includes(search) ||
+      p.steamLink.toLowerCase().includes(search) ||
+      roleText.toLowerCase().includes(search);
+
+    if(!matchesSearch) return false;
+
+    // Role filter
+    const r = roleText.trim().toLowerCase();
+    if(filter === "all") return true;
+    if(filter === "other") return !!r && !isKnownRole(r);
+    return r === filter;
+  });
+
+  // Existing sort (Steam A-Z)
+  if(sortAZ) filtered.sort((a,b)=>a.steam.localeCompare(b.steam));
+
+  // New: sort by role (A-Z / Z-A), then by Steam for stable ordering
+  if(roleSortMode !== 0){
+    filtered.sort((a,b)=>{
+      const ar = titleCaseWords(a.role || "");
+      const br = titleCaseWords(b.role || "");
+      const cmp = ar.localeCompare(br);
+      if(cmp !== 0) return roleSortMode === 1 ? cmp : -cmp;
+      return a.steam.localeCompare(b.steam);
+    });
+  }
+
+  filtered.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "card";
+
+    const roleRaw = String(p.role || "").trim();
+    const roleLabel = roleRaw ? titleCaseWords(roleRaw) : "";
+    const style = roleStyle(roleRaw);
+
+    const roleHtml = roleLabel
+      ? `<div class="role-pill" style="background:${style.bg}; border-color:${style.border}; color:${style.text};">${escapeHtml(roleLabel)}</div>`
+      : "";
+
+    div.innerHTML = `
+      <div class="row">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="who">
+          <strong>${escapeHtml(p.steam)}</strong>
+          <span>${escapeHtml(p.discord)}</span>
+          ${roleHtml}
+          <a href="${p.steamLink}" target="_blank" rel="noopener noreferrer">Open Steam profile</a>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-secondary" onclick="editProfile('${p.profile_id}')">Edit</button>
+        <button class="btn-danger" onclick="removeProfile('${p.profile_id}')">Remove</button>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+
+  empty.style.display = (profiles.length === 0) ? "block" : "none";
+  clearAllUiBtn.style.display = (profiles.length > 0) ? "inline-block" : "none";
+  updateHeader();
+}
+
+/* Safety */
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+/* Boot */
+updateHeader();
+renderProfiles();
+</script>
+
+</body>
+</html>
